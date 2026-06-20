@@ -364,16 +364,13 @@
 			this.shell.innerHTML = '';
 			var panel = el('div', 'amplifi-cb-modal__panel');
 			panel.innerHTML = window.AmplifiChatbaseSkeleton(cfg);
-			// Insert a close button into the header actions.
-			var actions = panel.querySelector('.amplifi-cb__actions');
-			if (actions) {
-				var close = el('button', 'amplifi-cb__close');
-				close.type = 'button';
-				close.setAttribute('aria-label', CFG.i18n ? CFG.i18n.close : 'Close');
-				close.innerHTML = '<svg viewBox="0 0 24 24" width="18" height="18" aria-hidden="true"><path fill="currentColor" d="M18.3 5.71L12 12l6.3 6.29-1.42 1.42L10.59 13.4 5.7 18.3 4.29 16.88 10.59 12 4.29 7.12 5.7 5.71l4.89 4.88 4.89-4.88z"/></svg>';
-				actions.appendChild(close);
-				close.addEventListener('click', Modal.close.bind(Modal));
-			}
+			// Float a close button on the panel (the header bar is hidden in modal view).
+			var close = el('button', 'amplifi-cb__close amplifi-cb__close--float');
+			close.type = 'button';
+			close.setAttribute('aria-label', CFG.i18n ? CFG.i18n.close : 'Close');
+			close.innerHTML = '<svg viewBox="0 0 24 24" width="18" height="18" aria-hidden="true"><path fill="currentColor" d="M18.3 5.71L12 12l6.3 6.29-1.42 1.42L10.59 13.4 5.7 18.3 4.29 16.88 10.59 12 4.29 7.12 5.7 5.71l4.89 4.88 4.89-4.88z"/></svg>';
+			panel.appendChild(close);
+			close.addEventListener('click', Modal.close.bind(Modal));
 
 			if (cfg.accent) {
 				panel.style.setProperty('--amplifi-cb-accent', cfg.accent);
@@ -514,7 +511,7 @@
 			avatar = '<span class="amplifi-cb__avatar">' + inner + '</span>';
 		}
 		var soundIcon = '<svg viewBox="0 0 24 24" width="18" height="18" aria-hidden="true"><path fill="currentColor" d="M3.63 3.63a.996.996 0 000 1.41L7.29 8.7 7 9H4a1 1 0 00-1 1v4a1 1 0 001 1h3l3.29 3.29c.63.63 1.71.18 1.71-.71v-4.17l4.18 4.18c-.49.37-1.02.68-1.6.91-.36.15-.58.53-.58.92 0 .72.73 1.18 1.39.91.8-.33 1.55-.77 2.22-1.31l1.34 1.34a.996.996 0 101.41-1.41L5.05 3.63c-.39-.39-1.02-.39-1.42 0z"/></svg>';
-		var sendIcon = '<svg viewBox="0 0 24 24" width="20" height="20" aria-hidden="true"><path fill="currentColor" d="M3.4 20.4l17.45-7.48a1 1 0 000-1.84L3.4 3.6a.993.993 0 00-1.39.91L2 9.12c0 .5.37.93.87.99L17 12 2.87 13.88c-.5.07-.87.5-.87 1l.01 4.61c0 .71.73 1.2 1.39.91z"/></svg>';
+		var sendIcon = '<svg viewBox="0 0 24 24" width="20" height="20" aria-hidden="true"><path fill="currentColor" d="M12 4l-1.41 1.41L16.17 11H4v2h12.17l-5.58 5.59L12 20l8-8z"/></svg>';
 
 		return '' +
 			'<div class="amplifi-cb__header">' +
