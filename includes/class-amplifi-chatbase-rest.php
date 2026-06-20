@@ -184,12 +184,19 @@ class Amplifi_Chatbase_Rest {
 		header( 'X-Accel-Buffering: no' );
 		header( 'Cache-Control: no-cache, no-store, must-revalidate' );
 
-		$send = function ( $text ) {
-			echo 'data: ' . wp_json_encode( array( 'text' => $text ) ) . "\n\n"; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped
+		$emit = function ( $type, $value ) {
+			echo 'data: ' . wp_json_encode( array( $type => $value ) ) . "\n\n"; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped
 			if ( function_exists( 'flush' ) ) {
 				flush();
 			}
 		};
+
+		// Shared state so the write callback can branch on the upstream status
+		// and buffer an error body instead of leaking it as bot text.
+		$state = array(
+			'code'     => 0,
+			'err_body' => '',
+		);
 
 		$ch = curl_init( $endpoint ); // phpcs:ignore WordPress.WP.AlternativeFunctions.curl_curl_init
 
@@ -204,10 +211,17 @@ class Amplifi_Chatbase_Rest {
 				),
 				CURLOPT_RETURNTRANSFER => false,
 				CURLOPT_TIMEOUT        => 120,
-				CURLOPT_WRITEFUNCTION  => function ( $handle, $chunk ) use ( $send ) {
-					// Chatbase streams raw text chunks; forward each as an SSE event.
-					if ( '' !== $chunk ) {
-						$send( $chunk );
+				CURLOPT_WRITEFUNCTION  => function ( $handle, $chunk ) use ( $emit, &$state ) {
+					// Resolve the upstream status once (headers are parsed before the body).
+					if ( 0 === $state['code'] ) {
+						$state['code'] = (int) curl_getinfo( $handle, CURLINFO_HTTP_CODE ); // phpcs:ignore WordPress.WP.AlternativeFunctions.curl_curl_getinfo
+					}
+					if ( $state['code'] >= 400 ) {
+						// Buffer the error body; it is delivered as a clean error event at the end.
+						$state['err_body'] .= $chunk;
+					} elseif ( '' !== $chunk ) {
+						// Healthy stream: forward each raw text chunk as an SSE text event.
+						$emit( 'text', $chunk );
 					}
 					return strlen( $chunk );
 				},
@@ -218,7 +232,10 @@ class Amplifi_Chatbase_Rest {
 
 		if ( false === $ok ) {
 			$err = curl_error( $ch ); // phpcs:ignore WordPress.WP.AlternativeFunctions.curl_curl_error
-			echo 'data: ' . wp_json_encode( array( 'error' => $err ? $err : __( 'Stream failed.', 'amplifi-chatbase' ) ) ) . "\n\n"; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped
+			$emit( 'error', $err ? $err : __( 'Stream failed.', 'amplifi-chatbase' ) );
+		} elseif ( $state['code'] >= 400 ) {
+			// Upstream returned an error: surface a clean message, not the raw body.
+			$emit( 'error', $this->extract_error( $state['err_body'] ) );
 		}
 
 		curl_close( $ch ); // phpcs:ignore WordPress.WP.AlternativeFunctions.curl_curl_close
