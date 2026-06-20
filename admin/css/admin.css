@@ -1,0 +1,115 @@
+/* Amplifi Chatbase — admin settings styles */
+
+.amplifi-cb-admin__sub {
+	font-size: 14px;
+	color: #50575e;
+	max-width: 640px;
+}
+
+.amplifi-cb-admin__grid {
+	display: flex;
+	gap: 28px;
+	align-items: flex-start;
+	flex-wrap: wrap;
+}
+
+.amplifi-cb-admin__main {
+	flex: 1 1 560px;
+	min-width: 0;
+}
+
+.amplifi-cb-admin__side {
+	flex: 0 0 320px;
+	position: sticky;
+	top: 40px;
+}
+
+.amplifi-cb-admin__card {
+	background: #fff;
+	border: 1px solid #dcdcde;
+	border-radius: 10px;
+	padding: 18px;
+	margin-bottom: 20px;
+}
+
+.amplifi-cb-admin__card h3 {
+	margin-top: 0;
+}
+
+/* Live preview */
+.amplifi-cb-admin__preview {
+	border-radius: 16px;
+	overflow: hidden;
+	border: 1px solid #e0e0e0;
+	background: var(--pv-bg, #fff);
+	box-shadow: 0 6px 24px rgba(0, 0, 0, 0.08);
+}
+
+.amplifi-cb-admin__pv-head {
+	padding: 12px 16px;
+	border-bottom: 1px solid rgba(0, 0, 0, 0.06);
+	font-weight: 600;
+	color: var(--pv-bot-text, #000);
+}
+
+.amplifi-cb-admin__pv-body {
+	padding: 16px;
+	display: flex;
+	flex-direction: column;
+	gap: 8px;
+	min-height: 160px;
+	background: var(--pv-bg, #fff);
+}
+
+.amplifi-cb-admin__pv-row {
+	display: flex;
+}
+
+.amplifi-cb-admin__pv-row--user {
+	justify-content: flex-end;
+}
+
+.amplifi-cb-admin__pv-bot,
+.amplifi-cb-admin__pv-user {
+	max-width: 80%;
+	padding: 9px 14px;
+	border-radius: 18px;
+	line-height: 1.4;
+	font-size: 14px;
+}
+
+.amplifi-cb-admin__pv-bot {
+	background: var(--pv-bot-bubble, #e9e9eb);
+	color: var(--pv-bot-text, #000);
+	border-bottom-left-radius: 6px;
+}
+
+.amplifi-cb-admin__pv-user {
+	background: var(--pv-user-bubble, #0a84ff);
+	color: var(--pv-user-text, #fff);
+	border-bottom-right-radius: 6px;
+}
+
+.amplifi-cb-admin__code {
+	display: block;
+	background: #f6f7f7;
+	border: 1px solid #e0e0e0;
+	border-radius: 6px;
+	padding: 8px 10px;
+	margin: 4px 0 14px;
+	font-size: 12px;
+	word-break: break-all;
+	white-space: pre-wrap;
+}
+
+.amplifi-cb-reveal {
+	margin-left: 8px;
+	cursor: pointer;
+}
+
+@media (max-width: 960px) {
+	.amplifi-cb-admin__side {
+		flex-basis: 100%;
+		position: static;
+	}
+}

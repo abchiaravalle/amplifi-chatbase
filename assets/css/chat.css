@@ -1,0 +1,534 @@
+/**
+ * Amplifi Chatbase — front-end styles.
+ * iMessage-inspired: soft bubbles, glass modal, subtle motion.
+ * Body text inherits the site font; font-sizes are forced inline server-side.
+ */
+
+/* ---------- Tokens (overridable via :root from PHP) ---------- */
+:root {
+	--amplifi-cb-accent: #0A84FF;
+	--amplifi-cb-user-bubble: #0A84FF;
+	--amplifi-cb-user-text: #ffffff;
+	--amplifi-cb-bot-bubble: #E9E9EB;
+	--amplifi-cb-bot-text: #000000;
+	--amplifi-cb-bg: #ffffff;
+	--amplifi-cb-modal-tint: rgba(0, 0, 0, 0.35);
+	--amplifi-cb-radius: 20px;
+	--amplifi-cb-font-size: 16px;
+	--amplifi-cb-gap: 8px;
+	--amplifi-cb-shadow: 0 10px 40px rgba(0, 0, 0, 0.16);
+	--amplifi-cb-ease: cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+/* ---------- Shared bits ---------- */
+.amplifi-cb,
+.amplifi-cb-hero,
+.amplifi-cb-modal,
+.amplifi-cb-bubble,
+.amplifi-cb-trigger {
+	box-sizing: border-box;
+}
+
+.amplifi-cb *,
+.amplifi-cb-hero *,
+.amplifi-cb-modal * {
+	box-sizing: border-box;
+}
+
+.amplifi-cb-notice {
+	border: 1px dashed var(--amplifi-cb-accent);
+	border-radius: 10px;
+	padding: 12px 16px;
+	color: #555;
+	background: #fafafa;
+	font-size: 14px;
+}
+
+/* ---------- Hero prompt box ---------- */
+.amplifi-cb-hero__form {
+	display: flex;
+	align-items: center;
+	gap: 8px;
+	width: 100%;
+	max-width: 640px;
+	background: var(--amplifi-cb-bg);
+	border: 1px solid rgba(0, 0, 0, 0.08);
+	border-radius: 999px;
+	padding: 6px 6px 6px 22px;
+	box-shadow: var(--amplifi-cb-shadow);
+	transition: box-shadow 0.25s var(--amplifi-cb-ease), transform 0.25s var(--amplifi-cb-ease);
+}
+
+.amplifi-cb-hero__form:focus-within {
+	box-shadow: 0 14px 50px rgba(10, 132, 255, 0.22);
+}
+
+.amplifi-cb-hero__input {
+	flex: 1;
+	border: 0;
+	outline: 0;
+	background: transparent;
+	color: inherit;
+	padding: 12px 0;
+	line-height: 1.4;
+}
+
+.amplifi-cb-hero__input::placeholder {
+	color: rgba(60, 60, 67, 0.5);
+	opacity: 1;
+}
+
+.amplifi-cb-hero__send {
+	flex: 0 0 auto;
+	width: 44px;
+	height: 44px;
+	border: 0;
+	border-radius: 50%;
+	background: var(--amplifi-cb-accent);
+	color: #fff;
+	display: inline-flex;
+	align-items: center;
+	justify-content: center;
+	cursor: pointer;
+	transition: opacity 0.2s var(--amplifi-cb-ease), background 0.2s var(--amplifi-cb-ease);
+}
+
+.amplifi-cb-hero__send:hover {
+	opacity: 0.92;
+}
+
+/* The animated caret used while "typing" placeholder text */
+.amplifi-cb-hero__input.is-animating::placeholder {
+	color: rgba(60, 60, 67, 0.62);
+}
+
+/* ---------- Inline window + modal window share .amplifi-cb chrome ---------- */
+.amplifi-cb--inline {
+	display: flex;
+	flex-direction: column;
+	width: 100%;
+	max-width: 420px;
+	height: 520px;
+	background: var(--amplifi-cb-bg);
+	border-radius: var(--amplifi-cb-radius);
+	box-shadow: var(--amplifi-cb-shadow);
+	overflow: hidden;
+	border: 1px solid rgba(0, 0, 0, 0.06);
+}
+
+.amplifi-cb__header {
+	display: flex;
+	align-items: center;
+	justify-content: space-between;
+	padding: 12px 14px;
+	border-bottom: 1px solid rgba(0, 0, 0, 0.06);
+	backdrop-filter: saturate(180%) blur(8px);
+}
+
+.amplifi-cb__identity {
+	display: flex;
+	align-items: center;
+	gap: 10px;
+	min-width: 0;
+}
+
+.amplifi-cb__avatar {
+	width: 34px;
+	height: 34px;
+	border-radius: 50%;
+	overflow: hidden;
+	display: inline-flex;
+	align-items: center;
+	justify-content: center;
+	background: var(--amplifi-cb-accent);
+	color: #fff;
+	flex: 0 0 auto;
+}
+
+.amplifi-cb__avatar img {
+	width: 100%;
+	height: 100%;
+	object-fit: cover;
+	display: block;
+}
+
+.amplifi-cb__name {
+	font-weight: 600;
+	color: var(--amplifi-cb-bot-text);
+	white-space: nowrap;
+	overflow: hidden;
+	text-overflow: ellipsis;
+}
+
+.amplifi-cb__actions {
+	display: flex;
+	align-items: center;
+	gap: 4px;
+}
+
+.amplifi-cb__sound,
+.amplifi-cb__close {
+	border: 0;
+	background: transparent;
+	color: rgba(60, 60, 67, 0.6);
+	width: 34px;
+	height: 34px;
+	border-radius: 50%;
+	cursor: pointer;
+	display: inline-flex;
+	align-items: center;
+	justify-content: center;
+	transition: background 0.2s var(--amplifi-cb-ease), color 0.2s var(--amplifi-cb-ease);
+}
+
+.amplifi-cb__sound:hover,
+.amplifi-cb__close:hover {
+	background: rgba(120, 120, 128, 0.14);
+	color: var(--amplifi-cb-bot-text);
+}
+
+.amplifi-cb__sound.is-on {
+	color: var(--amplifi-cb-accent);
+}
+
+/* ---------- Scroll area + bubbles ---------- */
+.amplifi-cb__scroll {
+	flex: 1;
+	overflow-y: auto;
+	padding: 16px 14px 8px;
+	display: flex;
+	flex-direction: column;
+	gap: var(--amplifi-cb-gap);
+	scroll-behavior: smooth;
+	-webkit-overflow-scrolling: touch;
+}
+
+.amplifi-cb__row {
+	display: flex;
+	width: 100%;
+}
+
+.amplifi-cb__row--user {
+	justify-content: flex-end;
+}
+
+.amplifi-cb__row--bot {
+	justify-content: flex-start;
+}
+
+.amplifi-cb__bubble {
+	max-width: 78%;
+	padding: 9px 14px;
+	border-radius: var(--amplifi-cb-radius);
+	line-height: 1.42;
+	word-wrap: break-word;
+	overflow-wrap: anywhere;
+	white-space: pre-wrap;
+	animation: amplifi-cb-pop 0.32s var(--amplifi-cb-ease) both;
+	transform-origin: bottom;
+}
+
+.amplifi-cb__row--user .amplifi-cb__bubble {
+	background: var(--amplifi-cb-user-bubble);
+	color: var(--amplifi-cb-user-text);
+	border-bottom-right-radius: 6px;
+}
+
+.amplifi-cb__row--bot .amplifi-cb__bubble {
+	background: var(--amplifi-cb-bot-bubble);
+	color: var(--amplifi-cb-bot-text);
+	border-bottom-left-radius: 6px;
+}
+
+.amplifi-cb__bubble a {
+	color: inherit;
+	text-decoration: underline;
+}
+
+/* Typing indicator */
+.amplifi-cb__typing {
+	display: inline-flex;
+	gap: 4px;
+	align-items: center;
+	padding: 12px 16px;
+}
+
+.amplifi-cb__typing span {
+	width: 8px;
+	height: 8px;
+	border-radius: 50%;
+	background: rgba(120, 120, 128, 0.6);
+	animation: amplifi-cb-blink 1.2s infinite ease-in-out both;
+}
+
+.amplifi-cb__typing span:nth-child(2) {
+	animation-delay: 0.2s;
+}
+
+.amplifi-cb__typing span:nth-child(3) {
+	animation-delay: 0.4s;
+}
+
+/* ---------- Suggested questions chips ---------- */
+.amplifi-cb__suggest {
+	display: flex;
+	flex-wrap: wrap;
+	gap: 8px;
+	padding: 4px 14px 12px;
+}
+
+.amplifi-cb__chip {
+	border: 1px solid var(--amplifi-cb-accent);
+	color: var(--amplifi-cb-accent);
+	background: transparent;
+	border-radius: 999px;
+	padding: 7px 14px;
+	cursor: pointer;
+	line-height: 1.3;
+	transition: background 0.2s var(--amplifi-cb-ease), color 0.2s var(--amplifi-cb-ease), transform 0.2s var(--amplifi-cb-ease);
+	animation: amplifi-cb-fade 0.4s var(--amplifi-cb-ease) both;
+}
+
+.amplifi-cb__chip:hover {
+	background: var(--amplifi-cb-accent);
+	color: #fff;
+}
+
+.amplifi-cb__chip:active {
+	transform: scale(0.97);
+}
+
+/* ---------- Composer ---------- */
+.amplifi-cb__composer {
+	display: flex;
+	align-items: center;
+	gap: 8px;
+	padding: 10px 12px;
+	border-top: 1px solid rgba(0, 0, 0, 0.06);
+}
+
+.amplifi-cb__input {
+	flex: 1;
+	border: 1px solid rgba(0, 0, 0, 0.1);
+	border-radius: 999px;
+	padding: 10px 16px;
+	outline: 0;
+	background: var(--amplifi-cb-bg);
+	color: var(--amplifi-cb-bot-text);
+	line-height: 1.4;
+	transition: border-color 0.2s var(--amplifi-cb-ease);
+}
+
+.amplifi-cb__input:focus {
+	border-color: var(--amplifi-cb-accent);
+}
+
+.amplifi-cb__send {
+	flex: 0 0 auto;
+	width: 40px;
+	height: 40px;
+	border: 0;
+	border-radius: 50%;
+	background: var(--amplifi-cb-accent);
+	color: #fff;
+	display: inline-flex;
+	align-items: center;
+	justify-content: center;
+	cursor: pointer;
+	transition: opacity 0.2s var(--amplifi-cb-ease), transform 0.2s var(--amplifi-cb-ease);
+}
+
+.amplifi-cb__send:hover {
+	opacity: 0.92;
+}
+
+.amplifi-cb__send:disabled {
+	opacity: 0.4;
+	cursor: default;
+}
+
+/* ---------- Modal ---------- */
+.amplifi-cb-modal {
+	position: fixed;
+	inset: 0;
+	z-index: 999999;
+	display: none;
+	align-items: flex-end;
+	justify-content: center;
+	background: var(--amplifi-cb-modal-tint);
+	-webkit-backdrop-filter: blur(14px);
+	backdrop-filter: blur(14px);
+	opacity: 0;
+	transition: opacity 0.32s var(--amplifi-cb-ease);
+	padding: 0;
+}
+
+.amplifi-cb-modal.is-open {
+	display: flex;
+	opacity: 1;
+}
+
+.amplifi-cb-modal__panel {
+	width: 100%;
+	max-width: 480px;
+	height: min(80vh, 720px);
+	display: flex;
+	flex-direction: column;
+	background: transparent;
+	margin: 0 auto;
+	transform: translateY(24px);
+	opacity: 0;
+	transition: transform 0.4s var(--amplifi-cb-ease), opacity 0.4s var(--amplifi-cb-ease);
+}
+
+.amplifi-cb-modal.is-open .amplifi-cb-modal__panel {
+	transform: translateY(0);
+	opacity: 1;
+}
+
+/* In modal the scroll area is transparent and bubbles float on the glass */
+.amplifi-cb-modal .amplifi-cb__scroll {
+	padding: 20px 18px 8px;
+	justify-content: flex-end;
+}
+
+.amplifi-cb-modal .amplifi-cb__header {
+	background: rgba(255, 255, 255, 0.06);
+	border-bottom: 1px solid rgba(255, 255, 255, 0.12);
+	border-top-left-radius: var(--amplifi-cb-radius);
+	border-top-right-radius: var(--amplifi-cb-radius);
+}
+
+.amplifi-cb-modal .amplifi-cb__name {
+	color: #fff;
+}
+
+.amplifi-cb-modal .amplifi-cb__sound,
+.amplifi-cb-modal .amplifi-cb__close {
+	color: rgba(255, 255, 255, 0.8);
+}
+
+.amplifi-cb-modal .amplifi-cb__composer {
+	border-top: 1px solid rgba(255, 255, 255, 0.12);
+	background: rgba(255, 255, 255, 0.06);
+	border-bottom-left-radius: var(--amplifi-cb-radius);
+	border-bottom-right-radius: var(--amplifi-cb-radius);
+}
+
+.amplifi-cb-modal .amplifi-cb__input {
+	background: rgba(255, 255, 255, 0.9);
+}
+
+/* ---------- Floating launcher bubble ---------- */
+.amplifi-cb-bubble {
+	position: fixed;
+	bottom: 22px;
+	z-index: 999998;
+	width: 58px;
+	height: 58px;
+	border: 0;
+	border-radius: 50%;
+	background: var(--amplifi-cb-accent);
+	color: #fff;
+	display: inline-flex;
+	align-items: center;
+	justify-content: center;
+	cursor: pointer;
+	box-shadow: var(--amplifi-cb-shadow);
+	transition: transform 0.25s var(--amplifi-cb-ease), box-shadow 0.25s var(--amplifi-cb-ease);
+	animation: amplifi-cb-pop 0.4s var(--amplifi-cb-ease) both;
+}
+
+.amplifi-cb-bubble:hover {
+	box-shadow: 0 14px 46px rgba(10, 132, 255, 0.4);
+}
+
+.amplifi-cb-bubble--right {
+	right: 22px;
+}
+
+.amplifi-cb-bubble--left {
+	left: 22px;
+}
+
+/* ---------- Modal trigger button ---------- */
+.amplifi-cb-trigger {
+	display: inline-flex;
+	align-items: center;
+	justify-content: center;
+	gap: 8px;
+	border: 0;
+	border-radius: 999px;
+	background: var(--amplifi-cb-accent);
+	color: #fff;
+	padding: 12px 22px;
+	cursor: pointer;
+	font: inherit;
+	box-shadow: var(--amplifi-cb-shadow);
+	transition: opacity 0.2s var(--amplifi-cb-ease);
+}
+
+.amplifi-cb-trigger:hover {
+	opacity: 0.92;
+}
+
+/* ---------- Keyframes ---------- */
+@keyframes amplifi-cb-pop {
+	0% {
+		opacity: 0;
+		transform: translateY(8px) scale(0.96);
+	}
+	100% {
+		opacity: 1;
+		transform: translateY(0) scale(1);
+	}
+}
+
+@keyframes amplifi-cb-fade {
+	0% {
+		opacity: 0;
+		transform: translateY(6px);
+	}
+	100% {
+		opacity: 1;
+		transform: translateY(0);
+	}
+}
+
+@keyframes amplifi-cb-blink {
+	0%, 80%, 100% {
+		transform: scale(0.7);
+		opacity: 0.4;
+	}
+	40% {
+		transform: scale(1);
+		opacity: 1;
+	}
+}
+
+/* ---------- Mobile: modal goes full screen ---------- */
+@media (max-width: 600px) {
+	.amplifi-cb-modal__panel {
+		max-width: 100%;
+		height: 100%;
+	}
+	.amplifi-cb-modal {
+		align-items: stretch;
+	}
+	.amplifi-cb-modal .amplifi-cb__header,
+	.amplifi-cb-modal .amplifi-cb__composer {
+		border-radius: 0;
+	}
+}
+
+/* ---------- Reduced motion ---------- */
+@media (prefers-reduced-motion: reduce) {
+	.amplifi-cb__bubble,
+	.amplifi-cb-bubble,
+	.amplifi-cb__chip,
+	.amplifi-cb-modal,
+	.amplifi-cb-modal__panel {
+		animation: none !important;
+		transition: none !important;
+	}
+}
