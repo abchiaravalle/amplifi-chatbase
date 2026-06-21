@@ -4,7 +4,7 @@ Tags: chatbase, chatbot, ai, chat, imessage
 Requires at least: 5.8
 Tested up to: 6.6
 Requires PHP: 7.4
-Stable tag: 1.0.0
+Stable tag: 1.0.0-alpha.1
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
@@ -51,10 +51,11 @@ Yes, when your Chatbase plan/endpoint supports it. Otherwise it falls back to a 
 
 == Changelog ==
 
-= 1.0.0 =
-* Initial release: hero, inline, and modal shortcodes; secure proxy; full theming; auto light/dark; persistence; sound; accessibility.
+= 1.0.0-alpha.1 =
+* First public **alpha**. Hero, inline, and modal shortcodes; secure proxy; full theming; auto light/dark; persistence; sound; accessibility.
+* **Alpha software**: provided "as is", with **absolutely no warranty** of any kind. Not yet recommended for production. APIs, options, and markup may change before a stable release.
 
 == Upgrade Notice ==
 
-= 1.0.0 =
-Initial release.
+= 1.0.0-alpha.1 =
+First public alpha. No warranty; not production-ready. Expect breaking changes before 1.0.0.

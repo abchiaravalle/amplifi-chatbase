@@ -3,7 +3,7 @@
  * Plugin Name:       Amplifi Chatbase
  * Plugin URI:        https://github.com/abchiaravalle/amplifi-chatbase
  * Description:       An elegant, iMessage-style alternate front end for Chatbase. Provides a hero prompt box, an inline chat window, and a glassy popup modal. Fully customizable colors, auto light/dark, and per-shortcode overrides. Your API key never touches the browser.
- * Version:           1.0.0
+ * Version:           1.0.0-alpha.1
  * Requires at least: 5.8
  * Requires PHP:      7.4
  * Author:            Amplifi
@@ -20,7 +20,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 	exit; // No direct access.
 }
 
-define( 'AMPLIFI_CHATBASE_VERSION', '1.0.0' );
+define( 'AMPLIFI_CHATBASE_VERSION', '1.0.0-alpha.1' );
 define( 'AMPLIFI_CHATBASE_FILE', __FILE__ );
 define( 'AMPLIFI_CHATBASE_DIR', plugin_dir_path( __FILE__ ) );
 define( 'AMPLIFI_CHATBASE_URL', plugin_dir_url( __FILE__ ) );

@@ -6,6 +6,10 @@ An elegant, **iMessage-style alternate front end for [Chatbase](https://www.chat
 
 ---
 
+> ⚠️ **Alpha software — v1.0.0-alpha.1.** This is an early public alpha released for testing and feedback. It is provided **"as is", with ABSOLUTELY NO WARRANTY** of any kind, express or implied (see [LICENSE](LICENSE), GPLv2 §11–12). Not recommended for production use. Options, REST routes, and markup may change without notice before a stable `1.0.0`. Use at your own risk.
+
+---
+
 ## Why
 
 Chatbase's default widget is fine, but it's not *yours*. Amplifi Chatbase gives you a clean, modern, iMessage-inspired chat experience you can color-match to any brand, place exactly where you want it, and ship with confidence. The Chatbase secret key never touches the browser, it is proxied through a WordPress REST endpoint.
