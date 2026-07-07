@@ -165,24 +165,71 @@
 
 	Chat.prototype.renderSuggestions = function () {
 		if (!this.cfg.questions || !this.cfg.questions.length) { return; }
+		if (this.cfg.suggestMode === 'off') { return; }
+
 		var wrap = el('div', 'amplifi-cb__suggest');
+		this.scroll.appendChild(wrap);
+		this.suggestEl = wrap;
+
+		if (this.cfg.suggestMode === 'rotating' && this.cfg.questions.length > 3) {
+			this.startRotation(wrap);
+		} else {
+			this.paintChips(wrap, this.pickSet(this.cfg.questions, 3));
+		}
+	};
+
+	// Pick up to n questions, shuffled, without repeating the same set twice in a row.
+	Chat.prototype.pickSet = function (pool, n) {
+		var arr = pool.slice();
+		for (var i = arr.length - 1; i > 0; i--) {
+			var j = Math.floor(Math.random() * (i + 1));
+			var tmp = arr[i]; arr[i] = arr[j]; arr[j] = tmp;
+		}
+		return arr.slice(0, Math.min(n, arr.length));
+	};
+
+	Chat.prototype.paintChips = function (wrap, questions) {
+		wrap.innerHTML = '';
 		var self = this;
-		this.cfg.questions.forEach(function (q, idx) {
+		questions.forEach(function (q, idx) {
 			var chip = el('button', 'amplifi-cb__chip');
 			chip.type = 'button';
 			chip.textContent = q;
 			chip.style.animationDelay = (idx * 0.05) + 's';
 			chip.addEventListener('click', function () {
+				self.stopRotation();
 				if (wrap.parentNode) { wrap.parentNode.removeChild(wrap); }
 				self.send(q);
 			});
 			wrap.appendChild(chip);
 		});
-		this.scroll.appendChild(wrap);
-		this.suggestEl = wrap;
+	};
+
+	Chat.prototype.startRotation = function (wrap) {
+		var self = this;
+		var interval = this.cfg.rotateInterval || 4000;
+		this.paintChips(wrap, this.pickSet(this.cfg.questions, 3));
+		if (prefersReducedMotion()) { return; } // Static set is enough when motion is reduced.
+		this.rotationTimer = setInterval(function () {
+			if (!wrap.parentNode || self.busy) { return; }
+			wrap.classList.add('is-rotating-out');
+			setTimeout(function () {
+				if (!wrap.parentNode) { return; }
+				self.paintChips(wrap, self.pickSet(self.cfg.questions, 3));
+				wrap.classList.remove('is-rotating-out');
+			}, 220);
+		}, interval);
+	};
+
+	Chat.prototype.stopRotation = function () {
+		if (this.rotationTimer) {
+			clearInterval(this.rotationTimer);
+			this.rotationTimer = null;
+		}
 	};
 
 	Chat.prototype.clearSuggestions = function () {
+		this.stopRotation();
 		if (this.suggestEl && this.suggestEl.parentNode) {
 			this.suggestEl.parentNode.removeChild(this.suggestEl);
 			this.suggestEl = null;

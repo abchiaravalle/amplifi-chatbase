@@ -149,6 +149,69 @@ if ( ! defined( 'ABSPATH' ) ) {
 					</tr>
 				</table>
 
+				<h2 class="title"><?php esc_html_e( 'Layout & Embedding', 'amplifi-chatbase' ); ?></h2>
+				<p class="description"><?php esc_html_e( 'Control how the widget sits inside your page design instead of always looking like a floating chrome-y box. Every shortcode can also override these individually — see the reference on the right.', 'amplifi-chatbase' ); ?></p>
+				<table class="form-table" role="presentation">
+					<tr>
+						<th scope="row"><label for="acb_variant"><?php esc_html_e( 'Style', 'amplifi-chatbase' ); ?></label></th>
+						<td>
+							<select id="acb_variant" name="<?php echo esc_attr( $name ); ?>[variant]">
+								<option value="card" <?php selected( $opts['variant'], 'card' ); ?>><?php esc_html_e( 'Card — border + shadow (default)', 'amplifi-chatbase' ); ?></option>
+								<option value="minimal" <?php selected( $opts['variant'], 'minimal' ); ?>><?php esc_html_e( 'Minimal — no border/shadow, keeps chrome background', 'amplifi-chatbase' ); ?></option>
+								<option value="bare" <?php selected( $opts['variant'], 'bare' ); ?>><?php esc_html_e( 'Bare — transparent, blends flush into the page', 'amplifi-chatbase' ); ?></option>
+							</select>
+						</td>
+					</tr>
+					<tr>
+						<th scope="row"><?php esc_html_e( 'Chrome', 'amplifi-chatbase' ); ?></th>
+						<td>
+							<label><input type="checkbox" name="<?php echo esc_attr( $name ); ?>[show_border]" value="1" <?php checked( $opts['show_border'], 1 ); ?> /> <?php esc_html_e( 'Show border', 'amplifi-chatbase' ); ?></label><br />
+							<label><input type="checkbox" name="<?php echo esc_attr( $name ); ?>[show_shadow]" value="1" <?php checked( $opts['show_shadow'], 1 ); ?> /> <?php esc_html_e( 'Show drop shadow', 'amplifi-chatbase' ); ?></label><br />
+							<label><input type="checkbox" name="<?php echo esc_attr( $name ); ?>[show_header]" value="1" <?php checked( $opts['show_header'], 1 ); ?> /> <?php esc_html_e( 'Show header bar (name + mute button)', 'amplifi-chatbase' ); ?></label>
+						</td>
+					</tr>
+					<tr>
+						<th scope="row"><label for="acb_align"><?php esc_html_e( 'Alignment', 'amplifi-chatbase' ); ?></label></th>
+						<td>
+							<select id="acb_align" name="<?php echo esc_attr( $name ); ?>[align]">
+								<option value="left" <?php selected( $opts['align'], 'left' ); ?>><?php esc_html_e( 'Left', 'amplifi-chatbase' ); ?></option>
+								<option value="center" <?php selected( $opts['align'], 'center' ); ?>><?php esc_html_e( 'Center', 'amplifi-chatbase' ); ?></option>
+								<option value="right" <?php selected( $opts['align'], 'right' ); ?>><?php esc_html_e( 'Right', 'amplifi-chatbase' ); ?></option>
+							</select>
+						</td>
+					</tr>
+					<tr>
+						<th scope="row"><label for="acb_max_width"><?php esc_html_e( 'Max Width (px)', 'amplifi-chatbase' ); ?></label></th>
+						<td><input type="number" id="acb_max_width" min="0" max="2000" name="<?php echo esc_attr( $name ); ?>[max_width]" value="<?php echo esc_attr( $opts['max_width'] ); ?>" /> <span class="description"><?php esc_html_e( '0 = no cap (fills its container).', 'amplifi-chatbase' ); ?></span></td>
+					</tr>
+				</table>
+
+				<h2 class="title"><?php esc_html_e( 'Suggested Questions', 'amplifi-chatbase' ); ?></h2>
+				<p class="description"><?php esc_html_e( 'Drive engagement with clickable prompts under the welcome message. Leave the pool empty and set per-shortcode questions instead, or fill this in as a site-wide fallback pool.', 'amplifi-chatbase' ); ?></p>
+				<table class="form-table" role="presentation">
+					<tr>
+						<th scope="row"><label for="acb_suggest_mode"><?php esc_html_e( 'Mode', 'amplifi-chatbase' ); ?></label></th>
+						<td>
+							<select id="acb_suggest_mode" name="<?php echo esc_attr( $name ); ?>[suggest_mode]">
+								<option value="rotating" <?php selected( $opts['suggest_mode'], 'rotating' ); ?>><?php esc_html_e( 'Rotating — cycles a fresh set of 3 every few seconds (needs 4+ questions)', 'amplifi-chatbase' ); ?></option>
+								<option value="static" <?php selected( $opts['suggest_mode'], 'static' ); ?>><?php esc_html_e( 'Static — shows one fixed set', 'amplifi-chatbase' ); ?></option>
+								<option value="off" <?php selected( $opts['suggest_mode'], 'off' ); ?>><?php esc_html_e( 'Off', 'amplifi-chatbase' ); ?></option>
+							</select>
+						</td>
+					</tr>
+					<tr>
+						<th scope="row"><label for="acb_rotate_interval"><?php esc_html_e( 'Rotate Every (ms)', 'amplifi-chatbase' ); ?></label></th>
+						<td><input type="number" id="acb_rotate_interval" min="1500" max="20000" step="500" name="<?php echo esc_attr( $name ); ?>[rotate_interval]" value="<?php echo esc_attr( $opts['rotate_interval'] ); ?>" /></td>
+					</tr>
+					<tr>
+						<th scope="row"><label for="acb_default_questions"><?php esc_html_e( 'Question Pool (fallback)', 'amplifi-chatbase' ); ?></label></th>
+						<td>
+							<textarea id="acb_default_questions" class="large-text" rows="5" name="<?php echo esc_attr( $name ); ?>[default_questions]" placeholder="<?php esc_attr_e( 'One question per line…', 'amplifi-chatbase' ); ?>"><?php echo esc_textarea( $opts['default_questions'] ); ?></textarea>
+							<p class="description"><?php esc_html_e( 'Used when a shortcode does not specify its own questions="..." attribute. Leave blank if every placement will set its own — this plugin ships with no questions baked in.', 'amplifi-chatbase' ); ?></p>
+						</td>
+					</tr>
+				</table>
+
 				<?php submit_button(); ?>
 			</div>
 
@@ -171,12 +234,14 @@ if ( ! defined( 'ABSPATH' ) ) {
 					<code class="amplifi-cb-admin__code">[amplifi_chat_hero questions="What do you offer?|How much does it cost?|Do you integrate with X?"]</code>
 
 					<p><strong><?php esc_html_e( 'Inline chat window', 'amplifi-chatbase' ); ?></strong></p>
-					<code class="amplifi-cb-admin__code">[amplifi_chat_inline height="520px"]</code>
+					<code class="amplifi-cb-admin__code">[amplifi_chat_inline height="520px" questions="Q1|Q2|Q3|Q4" suggest="rotating" variant="minimal" align="center" max_width="480"]</code>
 
 					<p><strong><?php esc_html_e( 'Popup modal trigger', 'amplifi-chatbase' ); ?></strong></p>
 					<code class="amplifi-cb-admin__code">[amplifi_chat_modal open_text="Chat with us"]</code>
 
-					<p class="description"><?php esc_html_e( 'Per-shortcode overrides: accent, name, welcome, placeholder, questions, icon (show|hide|URL), theme (auto|light|dark), height (inline), open_text (modal).', 'amplifi-chatbase' ); ?></p>
+					<p class="description"><?php esc_html_e( 'Content/behavior overrides: accent, name, welcome, placeholder, icon (show|hide|URL), theme (auto|light|dark), height (inline), open_text (modal).', 'amplifi-chatbase' ); ?></p>
+					<p class="description"><?php esc_html_e( 'Suggested questions: questions="Q1|Q2|Q3" (pipe- or newline-separated, falls back to the global pool above), suggest="rotating|static|off", rotate="3000" (ms).', 'amplifi-chatbase' ); ?></p>
+					<p class="description"><?php esc_html_e( 'Layout overrides (blend into any design): variant="card|minimal|bare", border="yes|no", shadow="yes|no", header="yes|no", align="left|center|right", max_width="480" (px).', 'amplifi-chatbase' ); ?></p>
 				</div>
 			</aside>
 		</div>

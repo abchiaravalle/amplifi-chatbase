@@ -103,17 +103,85 @@
 }
 
 /* ---------- Inline window + modal window share .amplifi-cb chrome ---------- */
+.amplifi-cb-embed {
+	width: 100%;
+}
+
 .amplifi-cb--inline {
 	display: flex;
 	flex-direction: column;
 	width: 100%;
-	max-width: 420px;
 	height: 520px;
 	background: var(--amplifi-cb-bg);
 	border-radius: var(--amplifi-cb-radius);
 	box-shadow: var(--amplifi-cb-shadow);
 	overflow: hidden;
 	border: 1px solid rgba(0, 0, 0, 0.06);
+}
+
+/* Card variant (the default) keeps the classic capped-width, fixed-height
+   floating-widget look. Minimal/bare are meant to be embedded INTO a page's
+   own content flow — a fixed 520px shell there reserves a large block of
+   empty space before any conversation starts, so they instead hug their
+   content (welcome + chips) and let the scroll area cap growth once a real
+   conversation is underway. Use the height="" shortcode attribute to force
+   a fixed height on any variant if you want the classic window feel. */
+.amplifi-cb--variant-card.amplifi-cb--inline {
+	max-width: 420px;
+}
+
+.amplifi-cb--variant-minimal.amplifi-cb--inline,
+.amplifi-cb--variant-bare.amplifi-cb--inline {
+	height: auto;
+}
+
+.amplifi-cb--variant-minimal .amplifi-cb__scroll,
+.amplifi-cb--variant-bare .amplifi-cb__scroll {
+	max-height: 420px;
+	min-height: 90px;
+}
+
+/* Variant: minimal — no border/shadow, keeps the chrome background so it still reads as a UI. */
+.amplifi-cb--variant-minimal.amplifi-cb--inline {
+	border: 0;
+	box-shadow: none;
+}
+
+/* Variant: bare — drops chrome entirely; blends flush into the surrounding page design. */
+.amplifi-cb--variant-bare.amplifi-cb--inline {
+	border: 0;
+	box-shadow: none;
+	background: transparent;
+	border-radius: 0;
+}
+
+.amplifi-cb--no-border.amplifi-cb--inline {
+	border: 0;
+}
+
+.amplifi-cb--no-shadow.amplifi-cb--inline {
+	box-shadow: none;
+}
+
+.amplifi-cb--no-bg.amplifi-cb--inline {
+	background: transparent;
+}
+
+.amplifi-cb--no-header .amplifi-cb__scroll {
+	padding-top: 16px;
+}
+
+/* Suggested-question chips read better in a horizontal row when the widget
+   has real width to work with (minimal/bare embeds); constrain each chip's
+   growth so 2-3 fit per row instead of one stretching to fill it. */
+.amplifi-cb--variant-minimal .amplifi-cb__suggest,
+.amplifi-cb--variant-bare .amplifi-cb__suggest {
+	justify-content: center;
+}
+
+.amplifi-cb--variant-minimal .amplifi-cb__chip,
+.amplifi-cb--variant-bare .amplifi-cb__chip {
+	flex: 0 1 auto;
 }
 
 .amplifi-cb__header {
@@ -275,6 +343,11 @@
 	flex-wrap: wrap;
 	gap: 8px;
 	padding: 4px 14px 12px;
+	transition: opacity 0.2s var(--amplifi-cb-ease);
+}
+
+.amplifi-cb__suggest.is-rotating-out {
+	opacity: 0;
 }
 
 .amplifi-cb__chip {

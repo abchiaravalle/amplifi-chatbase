@@ -33,6 +33,9 @@ class Amplifi_Chatbase_Settings {
 	/**
 	 * Default option values.
 	 *
+	 * Nothing here is specific to any one client/site — every default is
+	 * generic and safe to ship on any install.
+	 *
 	 * @return array
 	 */
 	public static function defaults() {
@@ -73,6 +76,20 @@ class Amplifi_Chatbase_Settings {
 			'sound'              => 0,
 			'placeholder'        => __( 'Ask me anything…', 'amplifi-chatbase' ),
 			'send_label'         => __( 'Send', 'amplifi-chatbase' ),
+
+			// Layout / embedding — let the widget blend into any page design
+			// rather than always looking like a floating chrome-y widget.
+			'variant'            => 'card', // card | minimal | bare.
+			'show_border'        => 1,
+			'show_shadow'        => 1,
+			'show_header'        => 1,
+			'align'              => 'center', // left | center | right (inline/hero wrapper alignment).
+			'max_width'          => 0, // 0 = no cap; otherwise px.
+
+			// Suggested questions — drive engagement instead of a blank box.
+			'suggest_mode'       => 'rotating', // rotating | static | off.
+			'rotate_interval'    => 4000, // ms between rotating suggestion sets.
+			'default_questions'  => '', // Global fallback pool (one per line). Left blank by default — never hardcode a client's questions here.
 		);
 	}
 
@@ -156,6 +173,20 @@ class Amplifi_Chatbase_Settings {
 		$out['sound']           = empty( $input['sound'] ) ? 0 : 1;
 		$out['placeholder']     = isset( $input['placeholder'] ) ? sanitize_text_field( $input['placeholder'] ) : '';
 		$out['send_label']      = isset( $input['send_label'] ) ? sanitize_text_field( $input['send_label'] ) : $defaults['send_label'];
+
+		$variant           = isset( $input['variant'] ) ? $input['variant'] : 'card';
+		$out['variant']    = in_array( $variant, array( 'card', 'minimal', 'bare' ), true ) ? $variant : 'card';
+		$out['show_border'] = empty( $input['show_border'] ) ? 0 : 1;
+		$out['show_shadow'] = empty( $input['show_shadow'] ) ? 0 : 1;
+		$out['show_header'] = empty( $input['show_header'] ) ? 0 : 1;
+		$align              = isset( $input['align'] ) ? $input['align'] : 'center';
+		$out['align']       = in_array( $align, array( 'left', 'center', 'right' ), true ) ? $align : 'center';
+		$out['max_width']   = isset( $input['max_width'] ) ? max( 0, min( 2000, absint( $input['max_width'] ) ) ) : 0;
+
+		$suggest_mode        = isset( $input['suggest_mode'] ) ? $input['suggest_mode'] : 'rotating';
+		$out['suggest_mode'] = in_array( $suggest_mode, array( 'rotating', 'static', 'off' ), true ) ? $suggest_mode : 'rotating';
+		$out['rotate_interval'] = isset( $input['rotate_interval'] ) ? max( 1500, min( 20000, absint( $input['rotate_interval'] ) ) ) : $defaults['rotate_interval'];
+		$out['default_questions'] = isset( $input['default_questions'] ) ? sanitize_textarea_field( $input['default_questions'] ) : '';
 
 		return $out;
 	}

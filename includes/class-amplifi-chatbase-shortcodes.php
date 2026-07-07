@@ -51,6 +51,28 @@ class Amplifi_Chatbase_Shortcodes {
 	}
 
 	/**
+	 * Parse a pool of suggested questions from a newline- or pipe-separated string.
+	 *
+	 * @param string $raw Raw text.
+	 * @return array
+	 */
+	private function parse_questions( $raw ) {
+		$raw = (string) $raw;
+		if ( '' === trim( $raw ) ) {
+			return array();
+		}
+		$parts = preg_split( '/[\r\n|]+/', $raw );
+		$out   = array();
+		foreach ( (array) $parts as $q ) {
+			$q = trim( wp_strip_all_tags( $q ) );
+			if ( '' !== $q ) {
+				$out[] = $q;
+			}
+		}
+		return $out;
+	}
+
+	/**
 	 * Common attribute parsing + per-instance config payload.
 	 *
 	 * @param array  $atts Shortcode atts.
@@ -68,11 +90,19 @@ class Amplifi_Chatbase_Shortcodes {
 				'name'        => '',
 				'welcome'     => '',
 				'placeholder' => '',
-				'questions'   => '', // Pipe-separated suggested questions.
+				'questions'   => '', // Pipe- or newline-separated suggested questions. Falls back to Settings → default_questions, then off.
+				'suggest'     => '', // rotating | static | off — overrides the global suggest_mode for this instance.
+				'rotate'      => '', // Rotation interval override in ms.
 				'height'      => '', // Inline height, e.g. 480px.
 				'icon'        => '', // 'show' | 'hide' | url.
 				'theme'       => '', // auto | light | dark override.
 				'open_text'   => '', // Modal trigger button label.
+				'variant'     => '', // card | minimal | bare — overrides the global variant for this instance.
+				'border'      => '', // yes | no.
+				'shadow'      => '', // yes | no.
+				'header'      => '', // yes | no.
+				'align'       => '', // left | center | right.
+				'max_width'   => '', // px, overrides the global cap for this instance.
 			),
 			$atts,
 			'amplifi_chat_' . $type
@@ -81,15 +111,20 @@ class Amplifi_Chatbase_Shortcodes {
 		$this->counter++;
 		$id = 'amplifi-cb-' . $type . '-' . $this->counter;
 
-		// Suggested questions: pipe-separated list.
-		$questions = array();
-		if ( '' !== $atts['questions'] ) {
-			foreach ( explode( '|', $atts['questions'] ) as $q ) {
-				$q = trim( wp_strip_all_tags( $q ) );
-				if ( '' !== $q ) {
-					$questions[] = $q;
-				}
-			}
+		// Suggested questions: per-instance override, else the global fallback pool.
+		$questions = $this->parse_questions( $atts['questions'] );
+		if ( empty( $questions ) ) {
+			$questions = $this->parse_questions( $opts['default_questions'] );
+		}
+
+		$suggest_mode = in_array( $atts['suggest'], array( 'rotating', 'static', 'off' ), true ) ? $atts['suggest'] : $opts['suggest_mode'];
+		if ( empty( $questions ) ) {
+			$suggest_mode = 'off';
+		}
+
+		$rotate_interval = $opts['rotate_interval'];
+		if ( '' !== $atts['rotate'] && is_numeric( $atts['rotate'] ) ) {
+			$rotate_interval = max( 1500, min( 20000, (int) $atts['rotate'] ) );
 		}
 
 		// Icon resolution.
@@ -105,16 +140,18 @@ class Amplifi_Chatbase_Shortcodes {
 		}
 
 		$config = array(
-			'type'        => $type,
-			'botName'     => '' !== $atts['name'] ? $atts['name'] : $opts['bot_name'],
-			'welcome'     => '' !== $atts['welcome'] ? $atts['welcome'] : $opts['welcome_message'],
-			'placeholder' => '' !== $atts['placeholder'] ? $atts['placeholder'] : $opts['placeholder'],
-			'questions'   => $questions,
-			'showIcon'    => $show_icon,
-			'botIcon'     => $icon_url,
-			'accent'      => $this->valid_color( $atts['accent'] ),
-			'theme'       => in_array( $atts['theme'], array( 'auto', 'light', 'dark' ), true ) ? $atts['theme'] : '',
-			'sendLabel'   => $opts['send_label'],
+			'type'           => $type,
+			'botName'        => '' !== $atts['name'] ? $atts['name'] : $opts['bot_name'],
+			'welcome'        => '' !== $atts['welcome'] ? $atts['welcome'] : $opts['welcome_message'],
+			'placeholder'    => '' !== $atts['placeholder'] ? $atts['placeholder'] : $opts['placeholder'],
+			'questions'      => $questions,
+			'suggestMode'    => $suggest_mode,
+			'rotateInterval' => $rotate_interval,
+			'showIcon'       => $show_icon,
+			'botIcon'        => $icon_url,
+			'accent'         => $this->valid_color( $atts['accent'] ),
+			'theme'          => in_array( $atts['theme'], array( 'auto', 'light', 'dark' ), true ) ? $atts['theme'] : '',
+			'sendLabel'      => $opts['send_label'],
 		);
 
 		return array(
@@ -122,6 +159,91 @@ class Amplifi_Chatbase_Shortcodes {
 			'config' => $config,
 			'atts'   => $atts,
 		);
+	}
+
+	/**
+	 * Resolve a yes/no shortcode override against a boolean option default.
+	 *
+	 * @param string $att     Raw shortcode attribute ('', 'yes', 'no').
+	 * @param bool   $default Global option value.
+	 * @return bool
+	 */
+	private function bool_override( $att, $default ) {
+		if ( 'yes' === $att ) {
+			return true;
+		}
+		if ( 'no' === $att ) {
+			return false;
+		}
+		return (bool) $default;
+	}
+
+	/**
+	 * Build the wrapper CSS classes for layout variant / border / shadow / header.
+	 *
+	 * @param array $opts Global options.
+	 * @param array $atts Shortcode atts.
+	 * @return array { classes (string), show_header (bool) }
+	 */
+	private function layout( $opts, $atts ) {
+		$variant = in_array( $atts['variant'], array( 'card', 'minimal', 'bare' ), true ) ? $atts['variant'] : $opts['variant'];
+		$border  = $this->bool_override( $atts['border'], $opts['show_border'] );
+		$shadow  = $this->bool_override( $atts['shadow'], $opts['show_shadow'] );
+		$header  = $this->bool_override( $atts['header'], $opts['show_header'] );
+
+		$classes = array( 'amplifi-cb--variant-' . $variant );
+		if ( ! $border || 'bare' === $variant ) {
+			$classes[] = 'amplifi-cb--no-border';
+		}
+		if ( ! $shadow || 'bare' === $variant ) {
+			$classes[] = 'amplifi-cb--no-shadow';
+		}
+		if ( 'bare' === $variant ) {
+			$classes[] = 'amplifi-cb--no-bg';
+		}
+		if ( ! $header ) {
+			$classes[] = 'amplifi-cb--no-header';
+		}
+
+		return array(
+			'classes'     => implode( ' ', $classes ),
+			'show_header' => $header,
+		);
+	}
+
+	/**
+	 * Outer wrapper style for alignment + max-width (keeps the widget from
+	 * always stretching full-width inside a themed section).
+	 *
+	 * @param array $opts Global options.
+	 * @param array $atts Shortcode atts.
+	 * @return array { style (string for outer div), needs_wrap (bool) }
+	 */
+	private function embed_wrap_style( $opts, $atts ) {
+		$align = in_array( $atts['align'], array( 'left', 'center', 'right' ), true ) ? $atts['align'] : $opts['align'];
+
+		$max_width = 0;
+		if ( '' !== $atts['max_width'] && is_numeric( $atts['max_width'] ) ) {
+			$max_width = max( 0, min( 2000, (int) $atts['max_width'] ) );
+		} elseif ( ! empty( $opts['max_width'] ) ) {
+			$max_width = (int) $opts['max_width'];
+		}
+
+		if ( 0 === $max_width && 'left' === $align ) {
+			return array( 'style' => '', 'needs_wrap' => false );
+		}
+
+		$style = '';
+		if ( $max_width > 0 ) {
+			$style .= 'max-width:' . $max_width . 'px;';
+		}
+		if ( 'center' === $align ) {
+			$style .= 'margin-left:auto;margin-right:auto;';
+		} elseif ( 'right' === $align ) {
+			$style .= 'margin-left:auto;';
+		}
+
+		return array( 'style' => $style, 'needs_wrap' => '' !== $style );
 	}
 
 	/**
@@ -222,13 +344,22 @@ class Amplifi_Chatbase_Shortcodes {
 			$height = 'height:' . esc_attr( $h ) . ' !important;';
 		}
 
+		$layout = $this->layout( $opts, $atts );
+		$wrap   = $this->embed_wrap_style( $opts, $atts );
+
 		$json = wp_json_encode( $cfg );
 
 		ob_start();
 		?>
-		<div class="amplifi-cb amplifi-cb--inline" id="<?php echo esc_attr( $id ); ?>" style="<?php echo esc_attr( $this->instance_style( $cfg ) . $height ); ?>" data-amplifi-cb='<?php echo esc_attr( $json ); ?>'>
-			<?php echo self::window_skeleton( $cfg, $opts ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped ?>
+		<?php if ( $wrap['needs_wrap'] ) : ?>
+		<div class="amplifi-cb-embed" style="<?php echo esc_attr( $wrap['style'] ); ?>">
+		<?php endif; ?>
+			<div class="amplifi-cb amplifi-cb--inline <?php echo esc_attr( $layout['classes'] ); ?>" id="<?php echo esc_attr( $id ); ?>" style="<?php echo esc_attr( $this->instance_style( $cfg ) . $height ); ?>" data-amplifi-cb='<?php echo esc_attr( $json ); ?>'>
+				<?php echo self::window_skeleton( $cfg, $opts, $layout['show_header'] ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped ?>
+			</div>
+		<?php if ( $wrap['needs_wrap'] ) : ?>
 		</div>
+		<?php endif; ?>
 		<?php
 		return ob_get_clean();
 	}
@@ -263,14 +394,16 @@ class Amplifi_Chatbase_Shortcodes {
 	/**
 	 * Build the reusable chat window skeleton (header + scroll area + composer).
 	 *
-	 * @param array $cfg  Instance config.
-	 * @param array $opts Global options.
+	 * @param array $cfg         Instance config.
+	 * @param array $opts        Global options.
+	 * @param bool  $show_header Whether to render the header bar (default true).
 	 * @return string
 	 */
-	public static function window_skeleton( $cfg, $opts ) {
+	public static function window_skeleton( $cfg, $opts, $show_header = true ) {
 		$fs = absint( $opts['font_size'] );
 		ob_start();
 		?>
+		<?php if ( $show_header ) : ?>
 		<div class="amplifi-cb__header">
 			<div class="amplifi-cb__identity">
 				<?php if ( ! empty( $cfg['showIcon'] ) ) : ?>
@@ -290,6 +423,7 @@ class Amplifi_Chatbase_Shortcodes {
 				</button>
 			</div>
 		</div>
+		<?php endif; ?>
 		<div class="amplifi-cb__scroll" role="log" aria-live="polite"></div>
 		<form class="amplifi-cb__composer" autocomplete="off">
 			<input

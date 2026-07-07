@@ -111,6 +111,8 @@ class Amplifi_Chatbase_Assets {
 				'placeholder'=> $opts['placeholder'],
 				'sendLabel'  => $opts['send_label'],
 				'themeMode'  => $opts['theme_mode'],
+				'suggestMode'=> $opts['suggest_mode'],
+				'rotateInterval' => absint( $opts['rotate_interval'] ),
 				'storageKey' => 'amplifi_cb_thread_' . substr( md5( (string) $opts['chatbot_id'] ), 0, 8 ),
 				'i18n'       => array(
 					'close'      => __( 'Close', 'amplifi-chatbase' ),
