@@ -31,6 +31,30 @@ class Amplifi_Chatbase_Rest {
 	public function __construct( $settings ) {
 		$this->settings = $settings;
 		add_action( 'rest_api_init', array( $this, 'register_routes' ) );
+		// Run after other rest_authentication_errors filters (e.g. security plugins that
+		// block anonymous REST access) so our public, nonce-verified chat route still works
+		// for logged-out visitors. We only ever loosen our own route; every other route is
+		// left exactly as earlier filters decided.
+		add_filter( 'rest_authentication_errors', array( $this, 'allow_anonymous_chat_route' ), 100 );
+	}
+
+	/**
+	 * Allow anonymous access to our own chat route even if another plugin has
+	 * restricted the REST API to logged-in users. Our route already enforces
+	 * its own nonce check + per-IP rate limit, so this is safe to permit.
+	 *
+	 * @param WP_Error|bool|null $errors Existing REST auth result/error.
+	 * @return WP_Error|bool|null
+	 */
+	public function allow_anonymous_chat_route( $errors ) {
+		if ( empty( $GLOBALS['wp']->query_vars['rest_route'] ) ) {
+			return $errors;
+		}
+		$route = ltrim( $GLOBALS['wp']->query_vars['rest_route'], '/' );
+		if ( 0 === strpos( $route, self::NAMESPACE . '/chat' ) ) {
+			return true;
+		}
+		return $errors;
 	}
 
 	/**
