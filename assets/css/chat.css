@@ -6,8 +6,8 @@
 
 /* ---------- Tokens (overridable via :root from PHP) ---------- */
 :root {
-	--amplifi-cb-accent: #0A84FF;
-	--amplifi-cb-user-bubble: #0A84FF;
+	--amplifi-cb-accent: #F57224;
+	--amplifi-cb-user-bubble: #F57224;
 	--amplifi-cb-user-text: #ffffff;
 	--amplifi-cb-bot-bubble: #E9E9EB;
 	--amplifi-cb-bot-text: #000000;
@@ -60,7 +60,7 @@
 }
 
 .amplifi-cb-hero__form:focus-within {
-	box-shadow: 0 14px 50px rgba(10, 132, 255, 0.22);
+	box-shadow: 0 14px 50px rgba(245, 114, 36, 0.22);
 }
 
 .amplifi-cb-hero__input {
@@ -530,7 +530,7 @@
 }
 
 .amplifi-cb-bubble:hover {
-	box-shadow: 0 14px 46px rgba(10, 132, 255, 0.4);
+	box-shadow: 0 14px 46px rgba(245, 114, 36, 0.4);
 }
 
 .amplifi-cb-bubble--right {
