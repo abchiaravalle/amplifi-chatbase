@@ -274,13 +274,28 @@
 
 		var self = this;
 		var typingRow = this.typing();
+		// ChatGPT-style: keep the "thinking" dots visible for a minimum beat so even
+		// instant responses read as the assistant typing, not a hard pop-in.
+		var typingShownAt = Date.now();
+		var MIN_TYPING_MS = prefersReducedMotion() ? 0 : 650;
+		function removeTyping(after) {
+			if (!typingRow) { if (after) { after(); } return; }
+			var wait = Math.max(0, MIN_TYPING_MS - (Date.now() - typingShownAt));
+			setTimeout(function () {
+				if (typingRow && typingRow.parentNode) {
+					typingRow.parentNode.removeChild(typingRow);
+				}
+				typingRow = null;
+				if (after) { after(); }
+			}, wait);
+		}
 
 		this.request(
 			this.messages,
 			function onChunk(partial, bubble) {
-				if (typingRow && typingRow.parentNode) {
-					typingRow.parentNode.removeChild(typingRow);
-					typingRow = null;
+				if (typingRow) {
+					// First chunk: retire the dots (respecting the min beat), then paint.
+					removeTyping();
 				}
 				if (!bubble.painted) {
 					bubble.painted = self.paint('assistant', '');
@@ -289,9 +304,7 @@
 				self.toBottom();
 			},
 			function onDone(full, bubble) {
-				if (typingRow && typingRow.parentNode) {
-					typingRow.parentNode.removeChild(typingRow);
-				}
+				if (typingRow) { removeTyping(); }
 				if (bubble.painted) {
 					bubble.painted.innerHTML = format(full);
 				} else {
@@ -304,9 +317,7 @@
 				self.toBottom();
 			},
 			function onError(msg) {
-				if (typingRow && typingRow.parentNode) {
-					typingRow.parentNode.removeChild(typingRow);
-				}
+				if (typingRow) { removeTyping(); }
 				self.paint('assistant', msg || (CFG.i18n ? CFG.i18n.error : 'Error'));
 				self.busy = false;
 				self.toBottom();
@@ -490,8 +501,53 @@
 			self.stop();
 			self.input.value = '';
 			self.input.blur();
-			Modal.mount(self.cfg, text);
+			// expand="inline": grow the compact box into a full chat window in
+			// place (no modal takeover) and seed the first message. Otherwise
+			// fall back to the shared modal shell.
+			if (self.cfg.expand === 'inline') {
+				self.expandInline(text);
+			} else {
+				Modal.mount(self.cfg, text);
+			}
 		});
+	};
+
+	// Expand the compact hero box into a full inline chat window, in place,
+	// then seed it with the first message. One-shot: after expanding, the
+	// hero form is replaced by the live chat.
+	Hero.prototype.expandInline = function (seedText) {
+		if (this.expanded) { return; }
+		this.expanded = true;
+		var self = this;
+
+		// Build the same window skeleton the inline shortcode uses.
+		var win = el('div', 'amplifi-cb amplifi-cb--inline amplifi-cb--variant-bare amplifi-cb--no-border amplifi-cb--no-shadow amplifi-cb--no-bg amplifi-cb--no-header');
+		win.innerHTML = window.AmplifiChatbaseSkeleton(this.cfg);
+		if (this.cfg.accent) {
+			win.style.setProperty('--amplifi-cb-accent', this.cfg.accent);
+			win.style.setProperty('--amplifi-cb-user-bubble', this.cfg.accent);
+		}
+		// Carry the demo page's cohesive class so the scoped CSS (fade mask,
+		// grey bubbles, white input, left-aligned chips) applies to the
+		// expanded window exactly as it did to the always-open widget.
+		if (this.root.getAttribute('data-expand-class')) {
+			win.classList.add(this.root.getAttribute('data-expand-class'));
+		}
+
+		// Mark the container as expanded (CSS animates the grow) and swap the
+		// compact form out for the full window.
+		this.root.classList.add('is-expanded');
+		if (this.form && this.form.parentNode) {
+			this.form.parentNode.replaceChild(win, this.form);
+		} else {
+			this.root.appendChild(win);
+		}
+
+		// Boot the chat engine on the new window, then seed the first message.
+		var chat = new Chat(win, this.cfg, {});
+		chat.seed(seedText);
+		var inp = win.querySelector('.amplifi-cb__input');
+		if (inp) { setTimeout(function () { inp.focus(); }, 250); }
 	};
 
 	Hero.prototype.animate = function () {

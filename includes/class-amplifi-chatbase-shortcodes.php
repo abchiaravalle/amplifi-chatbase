@@ -102,6 +102,7 @@ class Amplifi_Chatbase_Shortcodes {
 				'shadow'      => '', // yes | no.
 				'header'      => '', // yes | no.
 				'align'       => '', // left | center | right.
+				'expand'      => '', // hero only: 'inline' grows the box in place; default opens the modal.
 				'max_width'   => '', // px, overrides the global cap for this instance.
 			),
 			$atts,
@@ -151,6 +152,7 @@ class Amplifi_Chatbase_Shortcodes {
 			'botIcon'        => $icon_url,
 			'accent'         => $this->valid_color( $atts['accent'] ),
 			'theme'          => in_array( $atts['theme'], array( 'auto', 'light', 'dark' ), true ) ? $atts['theme'] : '',
+			'expand'         => 'inline' === $atts['expand'] ? 'inline' : '',
 			'sendLabel'      => $opts['send_label'],
 		);
 
