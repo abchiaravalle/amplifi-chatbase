@@ -31,11 +31,14 @@ class Amplifi_Chatbase_Rest {
 	public function __construct( $settings ) {
 		$this->settings = $settings;
 		add_action( 'rest_api_init', array( $this, 'register_routes' ) );
-		// Run after other rest_authentication_errors filters (e.g. security plugins that
-		// block anonymous REST access) so our public, nonce-verified chat route still works
-		// for logged-out visitors. We only ever loosen our own route; every other route is
-		// left exactly as earlier filters decided.
-		add_filter( 'rest_authentication_errors', array( $this, 'allow_anonymous_chat_route' ), 100 );
+		// Run LAST among rest_authentication_errors filters so our public, nonce-verified chat
+		// route still works for logged-out visitors when a security plugin restricts wp-json to
+		// logged-in users. Admin Site Enhancements' "Disable REST API" gate runs at priority 200
+		// (seen 2026-10-22), after the old priority-100 exception, so every visitor got a 401.
+		// PHP_INT_MAX keeps us after any such gate. We only ever loosen our own route; every
+		// other route is left exactly as earlier filters decided, and the route itself still
+		// enforces its nonce check + per-IP rate limit.
+		add_filter( 'rest_authentication_errors', array( $this, 'allow_anonymous_chat_route' ), PHP_INT_MAX );
 	}
 
 	/**
